@@ -4,25 +4,13 @@
 #include <unistd.h>
 
 
+#define NUMBER_OF_THREADS 8
 
-/*
-static void *thread_function() {
-    for (int i = 1; i <= 10; i++) {
-        printf("Thread: %d\n", i);
-        sleep(1); 
-    }
-    return NULL;
-}
-
-void create_thread(){
-    pthread_t thread;
-    if (pthread_create(&thread, NULL, thread_function, NULL) != 0) {
-        printf("Ошибка создания потока\n");
-    }
-    pthread_detach(thread);
-}
-
-*/
+struct Args{
+    int *mas;
+    int left;
+    int right;
+};
 
 
 // функция вывода массива на экран
@@ -65,6 +53,7 @@ void random_mas(int *mas, int len, int a, int b){  // указатель на м
 }
 
 
+// вспомогательная функция 
 void swap(int *x, int *y)
 {
  int temp; /* temp - вспомогательная переменная */
@@ -74,7 +63,12 @@ void swap(int *x, int *y)
 }
 
 
-void quick_sort(int *mas, int first, int last){
+// быстрая сортировка
+void* quick_sort(void *args){
+    struct Args *arguments = (struct Args *) args;
+    int *mas = arguments->mas;
+    int first = arguments->left;
+    int last = arguments->right;
     int pivot; /*опорное значение*/
     int l,r; /*левый и правый счетчики*/
     l=first; r=last;
@@ -88,11 +82,45 @@ void quick_sort(int *mas, int first, int last){
             r--;
         }
     } /*Рекурсивная сортировка:*/
-    if (first<r) quick_sort(mas,first,r); /*- левого участка, */
-    if (l<last) quick_sort(mas,l,last); /*- правого участка.*/
+    arguments->left = first;
+    arguments->right = r;
+    if (first<r) quick_sort(&arguments); /*- левого участка, */
+    arguments->left = l;
+    arguments->right = last;
+    if (l<last) quick_sort(&arguments); /*- правого участка.*/
+    return 0;
+}
+
+
+//функция мноопоточной сортировки
+void sort(int *mas, int len){
+    int l = len/NUMBER_OF_THREADS+1; //длина отрезка сортировки
+    struct Args arguments[NUMBER_OF_THREADS];
+    for (int i = 0; i*l<len; i++){
+        pthread_t thread;
+        arguments[i].mas = mas;
+        arguments[i].left = l*i;
+	if (i*(l+1) >len-1){
+	    arguments[i].right = len-1;
+	} else {
+	    arguments[i].right = l*(i+1)-1;
+	}
+	printf("Поток %d: l = %d; r = %d\n", i, arguments[i].left, arguments[i].right);
+	if (pthread_create(&thread, NULL, quick_sort, &arguments[i])!= 0) {
+        printf("Ошибка создания потока\n");
+	}
+	pthread_detach(thread);
+	i++;
+    }
+    print_mas(mas,len);
+    // Слияние подмассивов в общий
 
 }
 
+
+
+
+//количество потоков
 
 int main() {
     int len;
@@ -106,24 +134,14 @@ int main() {
     mas = malloc(len*sizeof(int));
 
     //заполнение массива
-    //scan_mas(mas,len); //с клавиатуры
-    random_mas(mas, len, a, b);// случайными числами из диапазона [a,b]
+    scan_mas(mas,len); //с клавиатуры
+    //random_mas(mas, len, a, b);// случайными числами из диапазона [a,b]
     printf("Исходный массив:\n");
     print_mas(mas, len);
 
-    quick_sort(mas,0, len-1);
+    sort(mas,len);
     printf("Отсортированный массив:\n");
     print_mas(mas,len);
 
-
     free(mas);
-
-    /*
-    create_thread();
-    sleep(1);
-    create_thread();
-
-    sleep(20);
-    printf("program stop\n");
-    */
     return 0;}
