@@ -110,9 +110,10 @@ int index_of_min(int *mas, int *pointers){
 
 
 
-//функция мноопоточной сортировки
+//функция многопоточной сортировки
 void sort(int *mas, int len){
-    int l = len/NUMBER_OF_THREADS+1; //длина отрезка сортировки
+    int l = len/NUMBER_OF_THREADS; //минимальная длина отрезка сортировки
+    int remaind = len % NUMBER_OF_THREADS;
     struct Args arguments[NUMBER_OF_THREADS];
     pthread_t last_thread;
     pthread_t threads[NUMBER_OF_THREADS];
@@ -121,36 +122,32 @@ void sort(int *mas, int len){
     //создание потоков и сортировка
 
     printf("\nРазбиение массива на подмассивы с индексами начального(l) и конечного(r) элементов:\n");
-    for (int i = 0; i*l<len; i++){
+    
+    int left= 0;
+    for (int i = 0; i < NUMBER_OF_THREADS; i++){
         pthread_t thread;
+
+        arguments[i].left = left;
+        if(i<remaind) arguments[i].right = left + l; //добавление остаточных элементов к первым подмассивам
+        else arguments[i].right = left + l -1;  //-1, т.к. индексация с нуля
         arguments[i].mas = mas;
-        arguments[i].left = l*i;
-        pointers[i]= l*i;
-	if (i*(l+1) >len-1){
-	    pointers[NUMBER_OF_THREADS-1]= -1;
-	    arguments[i].right = len-1;
-            printf("Поток %d: l = %d; r = %d\n", i, arguments[i].left, arguments[i].right);
-	    if (pthread_create(&last_thread, NULL, quick_sort, &arguments[i])!= 0) {
-		printf("Ошибка создания потока\n");
-	    }
-	    threads[i] = last_thread;
-	} else {
-	    arguments[i].right = l*(i+1)-1;
-    	    printf("Поток %d: l = %d; r = %d\n", i, arguments[i].left, arguments[i].right);
+        pointers[i]=left;
+        
+        printf("Поток %d: l = %d; r = %d\n", i+1, arguments[i].left, arguments[i].right);
 	    if (pthread_create(&thread, NULL, quick_sort, &arguments[i])!= 0) {
-		printf("Ошибка создания потока\n");
+		    printf("Ошибка создания потока\n");
 	    }
 	    threads[i] = thread;
-	}
+        left = arguments[i].right+1;
     }
-    for (int i = 0; i<NUMBER_OF_THREADS; i++){
-	pthread_join(threads[i], NULL);
-        //printf("Ok %d\n", i);
-	if (threads[i] == last_thread) break;
+
+    // ожидание завершения всех потоков
+    for (int i = 0; i < NUMBER_OF_THREADS; i++){
+        pthread_join(threads[i], NULL);
     }
 
     //исходный массив после сортировки подмассивов и до слияния
-    //print_mas(mas, len);
+    print_mas(mas, len);
 
     // Слияние подмассивов в общий массив
     int temp[len];
@@ -158,7 +155,7 @@ void sort(int *mas, int len){
 	int m = index_of_min(mas, pointers);
 	temp[k] = mas[pointers[m]];
 	pointers[m]++;
-        if (pointers[m] >= (m+1)*l || pointers[m] >= len) pointers[m]=-1;
+        if (pointers[m] > arguments[m].right) pointers[m]=-1;
     }
 
     //копирование отсортированного временного массива в основной
@@ -176,7 +173,7 @@ int main() {
 
     //инициализация массива
     scanf("%d", &len);
-    //plen = 50;
+    //len = 50;
     int a = 0;
     int b = 99;
     mas = malloc(len*sizeof(int));
