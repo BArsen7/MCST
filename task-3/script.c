@@ -54,6 +54,13 @@ int sort_by_len_reversed(const void *A, const void *B){
     return sort_by_len(B,A);
 }
 
+int sort_by_litografy(const void *A, const void *B){
+    return strcmp(((List *)A)->str, ((List *)B)->str);
+}
+
+int sort_by_litografy_reversed(const void *A, const void *B){
+    return sort_by_litografy(B,A);
+}
 
 int main(int argc, char *argv[]) { 
 
@@ -85,6 +92,10 @@ int main(int argc, char *argv[]) {
         qsort(buffer, strings_counter, sizeof(List), &sort_by_len); 
     } else if (strcmp(argv[3], "by_len_r") == 0){
         qsort(buffer, strings_counter, sizeof(List), &sort_by_len_reversed); 
+    } else if (strcmp(argv[3], "by_alph") == 0) {
+        qsort(buffer, strings_counter, sizeof(List), &sort_by_litografy);
+    } else if (strcmp(argv[3], "by_alph_r") == 0) {
+        qsort(buffer, strings_counter, sizeof(List), &sort_by_litografy_reversed);
     }
     
     for(int i = 0; i<strings_counter; i++){
