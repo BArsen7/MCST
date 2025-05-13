@@ -21,6 +21,11 @@ int main (int argc, char *argv[]){
             case 1:
                 char *msg = strerror(errno);
                 printf("%s\n", msg);
+                exit(2);
+                break;
+            case 2:
+                perror("Не удалось открыть файл\n");
+                exit(2);
                 break;
         }
     }
