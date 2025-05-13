@@ -8,43 +8,63 @@ int main(int argc, char *argv[]) {
         printf("Синтаксис команды: %s filepath\n", argv[0]); 
         exit(1); 
     }
-    FILE *fp = fopen(argv[1], "r");
-    if(fp==NULL){
-        perror("Ошибка открытия файла");
-        exit(2);
-    }
+
     pid_t pid = fork();
-    
+    FILE *fp = fopen(argv[1], "r");
+    if (pid == -1) {
+        perror("fork failed");
+        exit(3);
+    }
+
     if (pid == 0) {
         //printf("I'm child process!\n");
-        char c; 
-        FILE *fpw = fopen("ChildFile.txt", "w");
+        //FILE *fp = fopen(argv[1], "r");
+        FILE *fpw = fopen("ChildFile.txt", "w+");
         
-        if(fpw==NULL){
+        if(fpw==NULL || fp ==NULL){
             perror("Ошибка открытия файла");
             exit(2);
         }
 
+        int c;
         while ((c = getc(fp))!=EOF) 
             putc(c,fpw);
-        
+
+        printf("Содержимое дочернего файла:\n");
+        fseek(fpw, 0, SEEK_SET);
+        while ((c= getc(fpw)) != EOF) {
+            printf("%c", c);
+        }
         fclose(fpw); 
     } else {
 	    //printf("I'm parent process!\n");
-        char c; 
-        FILE *fpw = fopen("ParentFile.txt", "w");
+
+        FILE *fpw = fopen("ParentFile.txt", "w+");
         
-        if(fpw==NULL){
+        if(fpw==NULL || fp ==NULL){
             perror("Ошибка открытия файла");
             exit(2);
         }
 
+        int c;
         while ((c = getc(fp))!=EOF) 
             putc(c,fpw);
-        
-        fclose(fpw); 
+
+
         wait(NULL);
+
+        fseek(fpw, 0, SEEK_SET);
+        
+        printf("\n\nРодительский файл: \n");
+        while ((c= getc(fpw)) != EOF) {
+            printf("%c", c);
+        }
+        fclose(fpw); 
     }
+
+    
+
+  
     fclose(fp);
     return 0;
 }
