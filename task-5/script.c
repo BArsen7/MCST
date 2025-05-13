@@ -1,15 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 
-int main (){
+int main (int argc, char *argv[]){
+    if (argc!=2){
+        printf("Синтаксис команды: %s argument\n", argv[0]); 
+        exit(1); 
+    }
     FILE *fp = fopen("random-file", "r");
     
     if(fp){
         fclose(fp);
     } else {
-        return errno;
+        switch(atoi(argv[1])){
+            case 0:
+                return errno;
+                break;
+            case 1:
+                char *msg = strerror(errno);
+                printf("%s\n", msg);
+                break;
+        }
     }
     return 0;
 }
