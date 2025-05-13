@@ -93,7 +93,8 @@ void print_mas(int *mas, int len){  // указатель на массив | >
 
 
 ## Задание 7 
-
+Компиляция и запуск из папки task-7:  
+```gcc script.c && ./a.out input.txt```  
 
 
 ## Задание 9
