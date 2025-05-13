@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     printf("Не удается открыть файл %s\n", argv[1]); 
     exit(2); 
     }
-    if ((fpw=fopen(argv[2],"r")) == NULL) { 
+    if ((fpw=fopen(argv[2],"w")) == NULL) { 
         printf("Не удается открыть файл %s\n", argv[2]); 
         exit(2); 
     }
@@ -92,14 +92,15 @@ int main(int argc, char *argv[]) {
         qsort(buffer, strings_counter, sizeof(List), &sort_by_len); 
     } else if (strcmp(argv[3], "by_len_r") == 0){
         qsort(buffer, strings_counter, sizeof(List), &sort_by_len_reversed); 
-    } else if (strcmp(argv[3], "by_alph") == 0) {
+    } else if (strcmp(argv[3], "by_lit") == 0) {
         qsort(buffer, strings_counter, sizeof(List), &sort_by_litografy);
-    } else if (strcmp(argv[3], "by_alph_r") == 0) {
+    } else if (strcmp(argv[3], "by_lit_r") == 0) {
         qsort(buffer, strings_counter, sizeof(List), &sort_by_litografy_reversed);
     }
     
     for(int i = 0; i<strings_counter; i++){
         printf("%s\n", buffer[i].str);
+        fprintf(fpw, "%s\n", buffer[i].str);
     }
 
     if (fclose(fpr) != 0) printf("Ошибка при закрытии файла %s\n", argv[1]); 

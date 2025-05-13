@@ -1,0 +1,10 @@
+some
+kiwi
+grape
+fig
+date
+cherry
+banana
+apple
+Text
+INput

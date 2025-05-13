@@ -17,7 +17,7 @@ void print_mas(int *mas, int len){  // указатель на массив | >
     
     /*
     // вывод индексов
-    for (int i = ; i<=len-1; i++){
+    for (int i = 0; i<=len-1; i++){
         printf("%3d",i);
     }
     printf("\n");
@@ -168,6 +168,7 @@ void sort(int *mas, int len){
 
 
 int main() {
+    srand(time(NULL)); // для генерации действительно случайных чисел 
     int len;
     int *mas;
 
